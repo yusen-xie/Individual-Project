@@ -1,0 +1,465 @@
+---
+title: "Predictive Analytics"
+author: "yusen xie,20211194"
+date: "2021/10/20"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+```{r}
+
+library(VIM)
+library(dplyr)
+library(ggplot2)
+library(ggpubr)
+library(gcookbook)
+library(MASS)
+library(car)
+dataset<-read.csv("E:/data_data_set.csv", header=T, na.strings=c("NA"),encoding = "UTF-8")
+
+```
+
+# 1. Check your data make sure the numeric variables are numeric and convert any categorical variables to
+# factors using as.factor(). (1 mark)
+```{r}
+is.integer(dataset$Price)
+is.integer(dataset$bathroom)
+is.integer(dataset$bedroom)
+dataset$property.type=as.factor(dataset$property.type)
+```
+
+# 2. Check your data for missing values. Remove any missing entries. (1 mark)
+```{r}
+#find NA or Null values
+is.na(dataset)
+mean(is.na(dataset))
+sum(dataset$Price,na.rm = TRUE)
+dataset<-na.omit(dataset) 
+```
+
+
+# 3. Check your data for duplicates. Remove any duplicates. (1 mark)
+```{r}
+
+dataset1<-dataset[!duplicated(dataset),]
+# another way: dataset = dataset %>% distinct()
+
+```
+
+
+# 4. In what scenarios is it a good idea to transform a numeric column in your data to a new range? Describe at least two possible transforms. 
+
+##As far as I know, if we have huge variance in our data, then we can use normalization methods to rescale the calculated values to a smaller range. A smaller range of observations can help us do further regressions, more accurate analysis, etc. Secondly, if the range of one/two results is larger than the other numerical variables, then we can still use the normalization method to transform these numerical variables into a similar range without affecting our judgment. When a more specific understanding of a study object is needed, continuous and large range data can be divided into smaller ranges to make it more readable, while preventing too large or too small a variable from affecting the overall model analysis
+
+
+# 5. In what scenarios is it a good idea to transform continuous data to discrete values? (2 marks)
+
+##If we want to classify, for example, garbage (recycled, non-recyclable...) , then it is a good idea to convert continuous data to discrete values, in order to get more accurate data.
+
+
+
+# 6. Using the five-number summaries (mean, min, max, median, and quantiles). Describe the distribution of the price of houses by Area. (5 marks)
+
+##Looking at the results below, we have divided the data into seven different areas and summarized the results by obtaining species data. For Co. Dublin, there is only one result, i.e. the price is 1700, which is very stable and not too high or too low, which means that tenants do not have to worry about sudden rent increases by the landlord. For South Dublin City, West Co. Dublin, and North Dublin City, the lowest prices are below 700, they are 550, 750, and 480 respectively, and their highest prices are 6650, 3750, and 4000 respectively. The median, first quartile and third quartile of the data are shown in the R console below. From these 5 summary results, we can see that the mean and median values hover between 1800 and 2000, indicating that for all the different properties, the most common prices are very similar.
+
+```{r}
+
+
+DCC_Area=filter(dataset,Area=="Dublin City Centre")
+
+SDC_Area2=filter(dataset,Area=="South Dublin City")
+
+WCD_Area3=filter(dataset,Area=="West Co. Dublin")
+
+NDC_Area4=filter(dataset,Area=="North Dublin City")
+
+summary(DCC_Area$Price)
+summary(DCC_Area)
+ 
+summary(SDC_Area2)
+summary(SDC_Area2$Price)
+
+summary(WCD_Area3)
+summary(WCD_Area3$Price)
+
+summary(NDC_Area4)
+summary(NDC_Area4$Price)
+# same effect
+
+CD_value=dataset[dataset$Area =='Co. Dublin',]
+summary(CD_value)
+summary(CD_value$Price)
+
+NCD_value=dataset[dataset$Area =='North Co. Dublin',]
+summary(NCD_value)
+summary(NCD_value$Price)
+
+SCD_value=dataset[dataset$Area =='South Co. Dublin',]
+summary(SCD_value)
+summary(SCD_value$Price)
+
+summary(dataset)
+```
+
+
+# 7. Using a boxplot and histogram. Describe the distribution of the price of houses by Area (5 marks)
+##The box plot shows the distribution of house prices in Dublin, Ireland, with the average value of prices lying mainly around €2,000. It also shows that the house prices are generally below 5000. From the histogram we can see that the distribution is to the left to the right showing a significant decrease, perhaps because it has a longer tail on the right. The median is also fairly close to the mean.
+##By selecting several areas of the house type in boxplot, it comes out that house is the most expensive type of house, and also more expensive than other types of houses
+```{r}
+ggplot(data=dataset, aes(dataset$Area , y=dataset$Price))+ geom_boxplot(fill = "blue") 
+par(mfrow = c(3, 3))
+hist(dataset$Price[which(dataset$Area=="South Dublin City")],main="SDC",xlim = range(
+0,8000),xlab = NULL)
+hist(dataset$Price[which(dataset$Area=="North Dublin City")],main="NDC",xlim = range(
+0,8000),xlab = NULL)
+hist(dataset$Price[which(dataset$Area=="Dublin City Centre")],main="DCC",xlim = range
+(0,8000),xlab = NULL)
+hist(dataset$Price[which(dataset$Area=="West Co. Dublin")],main="WCD",xlim = range(0,
+8000),xlab = NULL)
+hist(dataset$Price[which(dataset$Area=="South Co. Dublin")],main="SCD",xlim = range(0
+,8000),xlab = NULL)
+hist(dataset$Price[which(dataset$Area=="North Co. Dublin")],main="NCD",xlim = range(0
+,8000),xlab = NULL)
+#Look at some individual examples(property.type)
+
+whatever=filter(dataset,Area=="Dublin City Centre")
+
+ggplot(whatever,aes(x=property.type,y=Price))+geom_boxplot()
+
+whatever2=filter(dataset,Area=="South Dublin City")
+ggplot(whatever2,aes(x=property.type,y=Price))+ylim(0,10000)+geom_boxplot()
+
+whatever3=filter(dataset,Area=="West Co. Dublin")
+ggplot(whatever3,aes(x=property.type,y=Price))+geom_boxplot()
+
+whatever4=filter(dataset,Area=="North Dublin City")
+ggplot(whatever4,aes(x=property.type,y=Price))+geom_boxplot()
+
+price=dataset$Price
+type_house=dataset$property.type
+ggplot(dataset,aes(x=price,y=type_house,fill=Area))+ geom_bar(stat = "identity", width=0.7, position = position_dodge(width = 0.8))+xlim(0,10000)+
+  labs(
+    title = "Price Analyse"
+  )+
+  coord_flip()
+#        
+```
+
+
+
+
+# 8. Describe the problems associated with histograms. (2 marks) 
+##The histogram can only be used to show the frequency and range of each region, the problem:
+###a: it cannot give more detailed data, and the histogram cannot show the correlation between two different variables.
+###b: It relies too much on the maximum and minimum values of the variables and cannot detect correlations, e.g., when the variables contain some frequent values, the histogram does not show them because the histogram is based on intervals and the intervals "hide" the values.
+###C: It can't distinguish between continuous and discrete variables, and it can't observe and compare the distribution of the data, and it's hard to make a judgment without loading all the data.
+
+
+
+# 9. Draw a schematic of a boxplot, showing the median (M), upper and lower quantiles (Q3 and Q1), the# interquartile range (IQR), whiskers and outliers. (3 marks)# 
+
+```{r}
+boxplot(dataset$Price[which(dataset$Area=="North Dublin City")])
+
+
+```
+
+
+
+# 10. Show how the boxplot for a normal population would compare to the probability density function for a normal distribution. Illustrate the four regions of the distribution (below the whisker, Q1, Q3, above the whisker). What percentage of the observations would you expect in each region? (3 marks) 
+
+```{r}
+#set/choose a random 
+plot(density(dataset$Price[which(dataset$Area=="North Dublin City")]))
+
+```
+
+# 11. Describe and illustrate the frequency and proportions of Area (4 marks)
+##In terms of share data, South Dublin City has a 37.01% share of housing, accounting for the vast majority of the overall regional share. According to the data, this figure is as high as 893, with the second highest being Dublin City Centre (631). However, there are only 3 houses in Co. Dublin, which is the least result here.
+```{r}
+dataset %>% count(Area)
+#change it into a table
+area=table(dataset$Area)
+
+barplot(area,xlab="Area",ylab="frequency",main="the frequency of area")
+
+
++round(addmargins(prop.table(area))*100,2)
+
+```
+
+
+# 12. Describe and illustrate the frequency and proportions of property.type (4 marks)
+##According to data, aprtment is the most numerous of all types and has the highest percentage of housing types in their respective areas, especially in the south of Dublin city.However,the remaining two property types are flat and studio, both less than 100, which are less frequent compared to apartments and houses.Meanwhile, according to the image house bathrooms are the most numerous of all house types, with Dublin South having the highest percentage share because of its housezui'doo
+```{r}
+SP<-table(dataset$property.type,dataset$Area)
+addmargins(SP)
+round(addmargins(prop.table(SP))*100,2)
+
+
+ggplot(dataset,aes(x=property.type,y=bathroom,fill= Area))+geom_col(position = 'dodge')+geom_text(
+  aes(label=bathroom),colour="white",size=3,vjust=1.5,position=position_dodge(.9))
+
+```
+# 13. Using the correlation and scatter plots discuss the relationship between Price and bedroom for Apartments in Dublin City Centre. (5 marks)
+##The correlation result is 0.5342254, which indicates that the number of bedrooms in our apartments in Dublin city center has a moderate correlation with the price of apartments in Dublin city center. The scatter plot shows a positive linear relationship between these two variables, which implies that as the number of bedrooms in an apartment increases, so does the price of the apartment.
+```{r}
+#select  property.type
+Apartment=dataset[dataset$property.type =='Apartment',]
+# select Area
+DCC=filter(Apartment,Area=="Dublin City Centre")
+#correlation between price and bedroom in DCE
+cor(DCC$Price,DCC$bedroom)
+scatterplot(DCC$Price~DCC$bedroom,data=DCC,main='correlation between time and distance',xlab ='number of bedrooms',ylab = 'price' )
+
+```
+
+
+
+# 14. Using conditioning plots (or coplots), discuss the relationship between Price and bedroom dividing the data into groups based on property.type in Dublin City Centre. (5 marks) 
+##From the results, we can see that most of all the data are concentrated in 1 and 2 locations, with prices increasing as the number of bedrooms increases, although there are also 0 bedrooms present in STUDIO. Except for studios, all three property types show a strong accompanying relationship, just like the results in the previous question. This could indicate that regardless of the property type, when the number of bedrooms increases, the property price increases.
+
+```{r}
+
+DCC_sum=dataset[dataset$Area== 'Dublin City Centre',]
+coplot(DCC_sum$Price~DCC_sum$bedroom|DCC_sum$property.type, data = DCC_sum,xlab ='number of bedrooms',ylab = 'price',col = 'red')
+```
+
+
+
+
+# Second part
+## 1 Fit a simple linear regression model to the data for Apartments in Dublin City Centre with Price as the response variable and bedroom as the predictor variable. (1 mark)
+
+```{r}
+# price_rep=lm(DCC$Price~DCC$bedroom,data = DCC)
+# summary(price_rep)
+# #Price as the response variable Y and bedroom as the predictor variable X.
+
+Y<-dataset$Price[which(dataset$Area=="Dublin City Centre")]
+X<-dataset$bedroom[which(dataset$Area=="Dublin City Centre")]
+model <- lm(dataset$Price[which(dataset$Area=="Dublin City Centre")]~dataset$bedroom[which(dataset$Area=="Dublin City Centre")])
+#Price as the response variable Y and bedroom as the predictor variable X.
+summary(model)
+p <- ggplot(DCC,aes(x=Price,y=bedroom)) + geom_point(shape=19) + xlab("Price") + ylab("bedroom")+geom_smooth(method = lm)
+p
+```
+
+
+<!-- Pr(>|t|) -->
+<!-- (Intercept)                                                    <2e-16 -->
+<!-- dataset$bedroom[which(dataset$Area == "Dublin City Centre")]   <2e-16 -->
+
+<!-- (Intercept)                                                  *** -->
+<!-- dataset$bedroom[which(dataset$Area == "Dublin City Centre")] *** -->
+<!-- --- -->
+<!-- Signif. codes:   -->
+<!-- 0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1 -->
+
+<!-- Residual standard error: 527.2 on 629 degrees of freedom -->
+<!-- Multiple R-squared:  0.3953,	Adjusted R-squared:  0.3943  -->
+<!-- F-statistic: 411.2 on 1 and 629 DF,  p-value: < 2.2e-16 -->
+
+
+
+#2 Write down the equation for the model. (2 marks)
+###beta0=1100.22,beta0=795.5242 and the residual standard error is 621.4,so the equation is Y = 1069.731+795.5242X+527.2.
+```{r}
+beta0<- 1100.22
+SXY <- sum(X*Y) - length(X)*mean(X)*mean(Y)
+SXX <- sum(X^2) - length(X)*mean(X)^2
+be <- SXY/SXX
+hat <- beta0 + be*X
+beta0 <-mean(Y) - be*mean(X)
+beta0
+length(X)
+```
+
+#3. What is the difference between least-absolute-value (LAV) regression and least-squares regression?Why is least-squares regression more popular? (2 marks)
+
+##As far as I know the least squares regression only have one solution whereas the Least absolute deviations regression usually have multiple solutions. reasons following :
+###1、Least squares can find the best function match of the data by minimizing the sum of squares of the error.
+###2、The use of least squares can easily find the unknown data and make the sum of squares of errors between these found data and the actual data is minimum.
+
+
+#4. Describe the various assumptions of the linear regression model? (6 marks)
+##The first linear model we did came from problems XIII and XIV, which showed the relationship between our price and the number of bedrooms. We can assume that there is a positive linear relationship between the number of bedrooms and the price, and the results derived from the amount of the final image argues for this. Then, we can assume homogeneity, which means that the residuals may be the same as the values of our number of bedrooms. 
+##Next, we can assume independence of the model, i.e., that prices and number of bedrooms may be affected by multiple elements of our conditions, such as property type, region, etc. and then, we can make the assumption of normality to show that the model is normally distributed.
+##Finally, if Cov(εi,εj)=0,i!=j,  and the variables εi (or  Yi variables) are not correlated with each other.however, x is not an invariant x values are fixed, and if they are random, they are measured without error and are independent of error.
+
+
+#5. Check if this model satisfies each of the assumptions of the linear regression model required for small sample inference. (5 marks)
+
+##First, assuming that the model built is nonlinear, then our parameter estimates will be biased and then our will make poor predictions based on what the model's data shows. And, if our model has a non-constant error term, it will also cause our parameter variances to be biased, and because our confidence intervals and hypothesis tests are based on OLS standard errors, this means that if the standard errors are biased, then our confidence intervals and hypothesis tests will be inaccurate. Second, if the numerical error of the model we build is not normal, then it will cause our hypothesis test and confidence interval results to be inaccurate as well. Third, if our model is not independent, this is usually a consequence of having too many outliers/high leverage points. This greatly affects our final regression results.
+
+
+
+
+#6. What are the consequences of not satisfying each of the assumptions of the linear regression model? (5 marks)
+### for the three assumptions of Gauss Markoff’s theory, if you don’t meet the expectation, the expected value of the random error term is zero and the variance of the random error term is constant. Parameter estimation and significance equation will be affected, but the autocorrelation of the random error term reflects the autocorrelation of the sample, so the random error term is independent of the sample./nIn addition, it is necessary to ensure that its test parameters strictly conform to the normal distribution, otherwise, the random error is special, in addition, it is necessary to ensure that its test parameters strictly conform to the normal distribution, otherwise the test results in the significance test can not be trusted. Finally, the independent variables involved in the linear regression must be guaranteed that their values are normal, otherwise they can not be trusted. Finally, for an independent variable to participate in a linear regression, it must be guaranteed that its value is a constant and not a random variable. Finally, for the independent variable involved in linear regression, its value must be guaranteed to be constant, not random. Using random variables as the basis for predictions makes the results meaningless.
+
+#7. Interpret the estimate of the intercept term. (2 marks)
+
+
+##when intercept term (β0=1318.8), shows the points where the estimated regression line intersects the y-axis. e point where it intersects the Y-axis, which can be interpreted as the estimated expected value of the price of a Dublin city center apartment. The price of use of the Dublin city center apartment gives the number of bedrooms, which is 0.
+
+
+#8. Interpret the estimate of the slope. (2 marks)
+#For Dublin City Centre prices, we expect a price increase of 665.3  for each additional bedroom.
+
+
+
+
+#9. What is the relationship between the estimate of the slope β and the sample correlation between Y and X? (2 marks)
+###The correlation between X and Y is the slope, and the correlation=0.4305327 and it is positive, which means the slope is also positive.
+```{r}
+cor(DCC$Price,DCC$bedroom)
+
+```
+
+#10. Calculate the variance of the estimate of the intercept and slope term. (2 marks)
+
+```{r}
+
+SSE = sum((Y-hat)^2)
+MSE = SSE/(length(Y)-2)
+Var_intercept = MSE*(1/length(Y) + mean(X)^2/SXX)#variance of the estimate of the intercept is 2893.866
+Var_slope = MSE/SXX#variance of the estimate of the slope is 1411.151
+Var_intercept
+Var_slope
+```
+
+
+
+
+
+#11. Interpret the standard error of the estimate of the intercept and slope term. (4 marks)
+
+```{r}
+SE_slope = sqrt(Var_slope)
+SE_intercept = sqrt(Var_intercept)
+SE_slope
+SE_intercept
+
+#Standard error of intercept term equals to 37.56529
+
+#Standard error of slope term equals to 53.79467
+```
+##From the linear regression result, we can see that Standard error of intercept term equals to 136.90. Standard
+error of slope term equals to 89.84
+
+
+#12. Calculate and interpret the confidence intervals for β0 (2 marks)
+
+```{r}
+alpha=0.05
+c(beta0 - qt(1-alpha/2,length(Y)-2)*sqrt(Var_intercept ),
+beta0 + qt(1-alpha/2,length(Y)-2)*sqrt(Var_intercept ))
+
+## [1]  994.5815 1205.8592
+
+```
+
+#13. Calculate and interpret the confidence intervals for β1 (2 marks)
+
+```{r}
+alpha=0.05
+c(be - qt(1-alpha/2,length(Y)-2)*sqrt(Var_slope),
+be + qt(1-alpha/2,length(Y)-2)*sqrt(Var_slope))
+## 687.9429 835.4801
+```
+
+
+
+
+#14. Compute and interpret the hypothesis test H0 : β0 = 0 vrs Ha : β0 6= 0. (4 marks)
+
+T = (beta0-0)/SE_intercept
+alpha =0.05
+qt(1-alpha/2, length(Y)-2)
+
+```{r}
+T = (beta0-0)/SE_intercept
+alpha =0.05
+qt(1-alpha/2, length(Y)-2)
+
+#[1] 1.963743
+
+pval <- 2*(1-pt(abs(T), length(Y)-2))
+pval
+#[1] 0
+```
+
+#15. Compute and interpret the hypothesis test H0 : β1 = 0 vrs Ha : β1 6= 0. (Using a t-test) (4 marks)
+
+
+```{r}
+T = (be-0)/SE_slope
+alpha =0.05
+qt(1-alpha/2, 3)
+pval <- 2*(1-pt(abs(T), length(Y)-2))
+pval
+#[1] 3.182446
+#[1] 0
+```
+
+
+#16. Interpret the F-statistic in the output in the summary of the regression model. (2 marks)
+
+
+From the summery function,it canbe know that the F-statistic is  411.2
+
+#17. Interpret the R-squared value (2 marks)
+
+
+```{r}
+
+SSE = sum((hat - Y)^2)
+SST = sum((Y - mean(Y))^2)
+R2 = (SST -SSE)/SST
+R2
+# R^2 is means the fraction of the variation in Y that ia "explained "By X,in this case,R^2 = 0.3952835 means the bedroom and price is linear fit.
+
+```
+#18. Interpret the residual standard error of the simple linear regression model. (2 marks)
+
+
+ the residual standard error is 527.2
+
+
+
+#19. Calculate, plot and comment on the shape of the confidence intervals for the estimated values of Y 
+
+```{r}
+SXX = sum((X - mean(X))^2)
+VAR_Y = MSE*(1/length(Y) + (X-mean(X))^2/SXX)
+cbind(hat- qt(1-alpha/2,length(Y)-2)*sqrt( VAR_Y),hat + qt(1-alpha/2,length(Y)-2)*sqrt( VAR_Y))
+
+```
+
+#20. Calculate, plot and comment on the shape of the prediction intervals for the estimated values of Y (2
+
+```{r}
+
+Xnew = as.matrix(X)
+MSE = SSE/(length(Y)-2)
+SXX = sum((X - mean(X))^2)
+Var_E = MSE*(1 + 1/length(Y) + (Xnew-mean(X))^2/SXX)
+YP = beta0 + be*Xnew
+alpha =0.05
+cbind(YP - qt(1-alpha/2,length(Y)-2)*sqrt(Var_E),
+YP + qt(1-alpha/2,length(Y)-2)*sqrt(Var_E))
+
+plot(X,Y,xlab="bedroom",ylab="price")
+lines(X,YP,col="blue")
+lines(X,YP +qt(1-alpha/2,length(Y)-2)*sqrt(Var_E),col="red")
+lines(X,YP -qt(1-alpha/2,length(Y)-2)*sqrt(Var_E),col="red")
+
+```
+
