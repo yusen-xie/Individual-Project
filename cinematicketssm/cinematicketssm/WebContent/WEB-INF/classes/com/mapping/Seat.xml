@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.SeatDAO">
+    <resultMap type="com.bean.Seat" id="BaseResultMap">
+      <id column="id" property="id" jdbcType="INTEGER"/>
+      <result column="seatno" property="seatno" jdbcType="VARCHAR"/>
+      <result column="iszy" property="iszy" jdbcType="VARCHAR"/>
+      <result column="movieid" property="movieid" jdbcType="VARCHAR"/>
+      <result column="changciid" property="changciid" jdbcType="VARCHAR"/>
+    </resultMap>
+    
+    <select id="findById" parameterType="int" resultType="seat">
+      select * from seat where id=#{id}
+    </select>
+    
+    <insert id="add" parameterType="seat">
+      insert into seat values(null,#{seatno},#{iszy},#{movieid},#{changciid})
+    </insert>
+    
+    <select id="selectAll" parameterType="HashMap" resultMap="BaseResultMap">
+      select * from seat where 1=1
+      <if test="changciid!=null and changciid!=''">
+        and changciid=#{changciid}
+      </if>
+      <if test="iszy!=null and iszy!=''">
+        and iszy=#{iszy}
+      </if>
+      order by id 
+    </select>
+    
+    <update id="update" parameterType="seat">
+      update seat
+      <set>
+        <if test="iszy!=null and iszy!=''">
+          iszy=#{iszy}
+        </if>
+      </set>
+      where id=#{id}
+    </update>
+    
+	
+</mapper>
+

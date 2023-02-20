@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.HallDAO">
+    <resultMap type="com.bean.Hall" id="BaseResultMap">
+      <id column="id" property="id" jdbcType="INTEGER"/>
+      <result column="name" property="name" jdbcType="VARCHAR"/>
+      <result column="seatno" property="seatno" jdbcType="INTEGER"/>
+      <result column="delstatus" property="delstatus" jdbcType="VARCHAR"/>
+      <result column="status" property="status" jdbcType="VARCHAR"/>
+    </resultMap>
+    
+    <insert id="add" parameterType="Hall">
+      insert into hall values(null,#{name},#{seatno},#{delstatus},#{status})
+    </insert>
+    
+    <select id="selectAll" parameterType="HashMap" resultMap="BaseResultMap">
+      select * from hall where delstatus=0
+      <if test="key!=null and key!=''">
+        and name like "%"#{key}"%"
+      </if>
+      order by id desc
+    </select>
+    
+    <select id="findById" parameterType="Int" resultType="hall">
+      select * from hall where id=#{id}
+    </select>
+    
+    <update id="update" parameterType="Int">
+      update hall 
+      <set>
+        <if test="name!=null and name!=''">
+          name=#{name},
+        </if>
+        <if test="seatno!='' and seatno &gt; 0">
+          seatno=#{seatno},
+        </if>
+        <if test="delstatus!=null and delstatus!=''">
+          delstatus=#{delstatus},
+        </if>
+        <if test="status!=null and status!=''">
+          status=#{status}
+        </if>
+      </set>
+      where id=#{id}
+    </update>
+	
+</mapper>
+

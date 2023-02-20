@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.MemberDAO">
+    <resultMap type="com.bean.Member" id="BaseResultMap">
+      <id column="id" property="id" jdbcType="INTEGER"/>
+      <result column="filename" property="filename" jdbcType="VARCHAR"/>
+      <result column="uname" property="uname" jdbcType="VARCHAR"/>
+      <result column="upass" property="upass" jdbcType="VARCHAR"/>
+      <result column="tname" property="tname" jdbcType="VARCHAR"/>
+      <result column="sex" property="sex" jdbcType="VARCHAR"/>
+      <result column="tel" property="tel" jdbcType="VARCHAR"/>
+      <result column="email" property="email" jdbcType="VARCHAR"/>
+      <result column="delstatus" property="delstatus" jdbcType="VARCHAR"/>
+      <result column="shstatus" property="shstatus" jdbcType="VARCHAR"/>
+      <result column="yue" property="yue" jdbcType="DOUBLE"/>
+      <result column="utype" property="utype" jdbcType="VARCHAR"/>
+    </resultMap>
+    
+    
+    <select id="selectOne"  parameterType="String" resultMap="BaseResultMap">
+      select * from member where uname=#{0} and upass=#{1} and shstatus='正在使用'
+    </select>
+    
+    <insert id="add" parameterType="Member">
+      insert into member values(null,#{filename},#{uname},#{upass},#{tname},#{sex},#{tel},#{email},#{delstatus},#{shstatus},#{yue},#{utype})
+    </insert>
+    
+    <select id="checkUname" parameterType="String" resultMap="BaseResultMap">
+      select * from member where uname=#{uname}
+    </select>
+    
+    <select id="findById" parameterType="Int" resultType="Member">
+      select * from member where id=#{id}
+    </select>
+    
+    
+    <select id="selectAll" parameterType="HashMap" resultMap="BaseResultMap">
+     select * from member where 1=1 and delstatus=0 
+     <if test="key!=null and key!=''">
+       and (uname like "%"#{key}"%" or tname like "%"#{key}"%")
+     </if>
+     order by id desc
+    </select>
+    
+    <update id="update" parameterType="member">
+      update member 
+      <set>
+        <if test="upass!=null and upass!=''">
+          upass=#{upass},
+        </if>
+        <if test="tname!=null and tname!=''">
+          tname=#{tname},
+        </if>
+        <if test="sex!=null and sex!=''">
+          sex=#{sex},
+        </if>
+        <if test="tel!=null and tel!=''">
+          tel=#{tel},
+        </if>
+        <if test="email!=null and email!=''">
+          email=#{email},
+        </if>
+        <if test="filename!=null and filename!=''">
+          filename=#{filename},
+        </if>
+        <if test="delstatus!=null and delstatus!=''">
+          delstatus=#{delstatus},
+        </if>
+        <if test="shstatus!=null and shstatus!=''">
+          shstatus=#{shstatus},
+        </if>
+        <if test="utype!=null and utype!=''">
+          utype=#{utype},
+        </if>
+      </set>
+      where id=#{id}
+    </update>
+    
+    <update id="updateYue" parameterType="member">
+      update member set yue=#{yue} where id=#{id}
+    </update>
+    
+    <update id="delete" parameterType="int">
+      update member set delstatus=1 where id=#{id}
+    </update>
+	
+</mapper>
+

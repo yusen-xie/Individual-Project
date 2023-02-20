@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.UserDAO">
+
+    <resultMap type="com.bean.User" id="BaseResultMap">
+      <id column="id" property="id" jdbcType="INTEGER"/>
+      <result column="username" property="username" jdbcType="VARCHAR"/>
+      <result column="userpassword" property="userpassword" jdbcType="VARCHAR"/>
+      <result column="realname" property="realname" jdbcType="VARCHAR"/>
+      <result column="sex" property="sex" jdbcType="VARCHAR"/>
+      <result column="tel" property="tel" jdbcType="VARCHAR"/>
+      <result column="email" property="email" jdbcType="VARCHAR"/>
+      <result column="delstatus" property="delstatus" jdbcType="VARCHAR"/>
+      <result column="usertype" property="usertype" jdbcType="VARCHAR"/>
+      <result column="filename" property="filename" jdbcType="VARCHAR"/>
+    </resultMap>
+    
+    
+    <select id="selectOne" resultMap="BaseResultMap">
+      select * from user where username = #{username} and userpassword = #{userpassword}
+    </select>
+    
+    <select id="selectAll" parameterType="hashmap" resultMap="BaseResultMap">
+      select * from user where 1=1
+      <if test="key!=null and key!=''">
+        and (username like "%"#{key}"%" or realname like "%"#{key}"%")
+      </if>
+      <if test="usertype!=null and usertype!=''">
+        and usertype=#{usertype}
+      </if>
+      order by id desc
+    </select>
+
+	<select id="findById" resultType="User" parameterType="int">
+		select * from user where id=#{id}
+	</select>
+
+	<update id="update" parameterType="User">
+		update user set realname=#{realname},sex=#{sex},tel=#{tel},email=#{email} where id=#{id}
+	</update>
+	
+	<update id="updatepwd" >
+		update user set userpassword=#{1} where id=#{0}
+	</update>
+	
+	
+	
+
+	
+	<select id="checkUsername" parameterType="String" resultMap="BaseResultMap">
+	  select * from user where username =#{username} and delstatus=0
+	</select>
+	
+	<insert id="add" parameterType="User">
+	  insert into user values(null,#{username},#{userpassword},#{realname},#{sex},#{tel},#{email},#{delstatus},#{usertype},#{filename})
+	</insert>
+	
+	<delete id="delete" parameterType="int">
+	  delete from user where id=#{id}
+	</delete>
+	
+	<select id="usernamecheck" parameterType="string" resultMap="BaseResultMap">
+	  select * from user where username=#{username}
+	</select>
+	
+	
+	
+</mapper>
+

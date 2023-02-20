@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.MovieDAO">
+    <resultMap type="com.bean.Movie" id="BaseResultMap">
+      <id column="id" property="id" jdbcType="INTEGER"/>
+      <result column="name" property="name" jdbcType="VARCHAR"/>
+      <result column="categoryid" property="categoryid" jdbcType="VARCHAR"/>
+      <result column="filename" property="filename" jdbcType="VARCHAR"/>
+      <result column="zystr" property="zystr" jdbcType="VARCHAR"/>
+      <result column="content" property="content" jdbcType="VARCHAR"/>
+      <result column="savetime" property="savetime" jdbcType="VARCHAR"/>
+      <result column="score" property="score" jdbcType="DOUBLE"/>
+      <result column="price" property="price" jdbcType="DOUBLE"/>
+      <result column="issy" property="issy" jdbcType="VARCHAR"/>
+      <result column="isbf" property="isbf" jdbcType="VARCHAR"/>
+      <result column="delstatus" property="delstatus" jdbcType="VARCHAR"/>
+      <result column="hallid" property="hallid" jdbcType="VARCHAR"/>
+      <result column="longtime" property="longtime" jdbcType="VARCHAR"/>
+    </resultMap>
+    
+     <insert id="add" parameterType="movie">
+      insert into movie values(null,#{name},#{categoryid},#{filename},#{zystr},#{content},#{savetime},#{score},#{price},#{issy},#{isbf},#{delstatus},#{hallid},#{longtime})
+    </insert>
+    
+    <select id="selectAll" parameterType="HashMap" resultMap="BaseResultMap">
+      select * from movie where 1=1 and delstatus=0
+      <if test="key!=null and key!=''">
+         and name like "%"#{key}"%"
+      </if>
+      <if test="categoryid!=null and categoryid!=''">
+         and categoryid=#{categoryid}
+      </if>
+      <if test="issy!=null and issy!=''">
+         and issy=#{issy}
+      </if>
+      order by id desc
+    </select>
+    
+    <select id="findById" parameterType="Int" resultType="movie">
+      select * from movie where id=#{id}
+    </select>
+    
+    <update id="update" parameterType="Int">
+      update movie
+      <set>
+        <if test="name!=null and name!=''">
+          name=#{name},
+        </if>
+        <if test="categoryid!=null and categoryid!=''">
+          categoryid=#{categoryid},
+        </if>
+        <if test="filename!=null and filename!=''">
+          filename=#{filename},
+        </if>
+        
+        <if test="zystr!=null and zystr!=''">
+          zystr=#{zystr},
+        </if>
+        
+        <if test="content!=null and content!=''">
+          content=#{content},
+        </if>
+        <if test="savetime!=null and savetime!=''">
+          savetime=#{savetime},
+        </if>
+        <if test="score!='' and score &gt;> 0">
+          score=#{score},
+        </if>
+        <if test="price!='' and price &gt;> 0">
+          price=#{price},
+        </if>
+        
+         <if test="isbf!=null and isbf!=''">
+          isbf=#{isbf},
+        </if>
+        
+         <if test="issy!=null and issy!=''">
+          issy=#{issy},
+        </if>
+        
+        <if test="hallid!=null and hallid!=''">
+          hallid=#{hallid},
+        </if>
+        
+        <if test="delstatus!=null and delstatus!=''">
+          delstatus=#{delstatus},
+        </if>
+        
+        <if test="longtime!=null and longtime!=''">
+          longtime=#{longtime},
+        </if>
+        
+        
+      </set>
+        where id=#{id}
+    </update>
+    
+	
+</mapper>
+

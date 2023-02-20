@@ -1,0 +1,52 @@
+#pagediv{
+    border:0px solid red;
+    display: flex;
+    margin: 0px auto;
+    flex-direction: row;
+
+    justify-content: center;
+    align-items: center;
+}
+#pagediv ul{
+    list-style: none;
+    display: flex;
+}
+#pagediv ul li{
+    border:1px solid gray;
+    height: 25px;
+    line-height: 25px;
+    display: flex;
+    margin-right: 10px;
+    padding: 0px 4px 0px 4px;
+    border: 1px solid #DDDDDD;
+}
+#pagediv ul li:hover{
+    background-color: #009688;
+    border:0px;
+}
+
+#pagediv ul li a:hover{
+    color: white;
+    text-decoration: none;
+}
+.pagesz{
+    width: 28px;
+}
+
+.pagesz a{
+    padding-left: 5px;
+    text-decoration:none;
+    display: flex;
+
+}
+
+.pagesz.acvtive{
+    background-color: #009688;
+    color:white;
+    border:1px solid #009688 !important;
+
+}
+
+.pagesz.acvtive a{
+    color:white;
+}

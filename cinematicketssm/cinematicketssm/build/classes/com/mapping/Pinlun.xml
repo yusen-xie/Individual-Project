@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.PinlunDAO">
+    <resultMap type="com.bean.Pinlun" id="BaseResultMap">
+      <id column="id" property="id" jdbcType="INTEGER"/>
+      <result column="memberid" property="memberid" jdbcType="VARCHAR"/>
+      <result column="movieid" property="movieid" jdbcType="VARCHAR"/>
+      <result column="content" property="content" jdbcType="VARCHAR"/>
+      <result column="savetime" property="savetime" jdbcType="VARCHAR"/>
+      <result column="score" property="score" jdbcType="DOUBLE"/>
+    </resultMap>
+    
+    <select id="selectAll" parameterType="hashmap" resultMap="BaseResultMap">
+      select * from pinlun where 1=1 
+      <if test="key!=null and key!=''">
+        and memberid in (select id from member where 1=1 and (uname like "%"#{key}"%" or tname like "%"#{key}"%"))
+      </if>
+      <if test="memberid!=null and memberid!=''">
+        and memberid=#{memberid}
+      </if>
+      <if test="movieid!=null and movieid!=''">
+        and movieid=#{movieid}
+      </if>
+      order by id desc
+    </select>
+    
+    <insert id="add" parameterType="pinlun">
+      insert into pinlun values(null,#{memberid},#{movieid},#{content},#{savetime},#{score})
+    </insert>
+    
+    <delete id="delete" parameterType="int">
+      delete from pinlun where id=#{id}
+    </delete>
+    
+    <select id="findById" parameterType="int" resultType="pinlun">
+      select * from pinlun where id=#{id}
+    </select>
+    
+	
+</mapper>
+
